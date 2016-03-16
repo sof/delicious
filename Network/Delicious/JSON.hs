@@ -196,18 +196,18 @@ hashUrl s = md5sum (pack (map (fromIntegral.fromEnum) s))
 data URLDetails =
         URLDetails { total :: !Integer
                    , tags  :: [(String,Integer)]
-		   , hash  :: String {-MD5-}
-		   , url   :: String {-URL-}
-		   }
+       , hash  :: String {-MD5-}
+       , url   :: String {-URL-}
+       }
         deriving (Eq,Show,Read)
 
 nullURLDetails :: URLDetails
 nullURLDetails =
   URLDetails { total = 0
              , tags  = []
-	     , hash  = ""
-	     , url   = ""
-	     }
+       , hash  = ""
+       , url   = ""
+       }
 
 -- | Compose and decompose URLDetails as JSON in the form delicious uses.
 instance JSON URLDetails where
@@ -227,8 +227,7 @@ instance JSON URLDetails where
                         Just (JSObject (JSONObject obj)) ->
                           liftM (reverse . sortBy (comparing snd)) $
                             mapM (\(x,y) -> readJSON y >>= \y' -> return (x,y')) obj
-                        Just x ->
-			  fail ("Network.Delicious.JSON: Unexpected JSON value for 'top_tags': " ++ show x)
+                        Just x -> fail ("Network.Delicious.JSON: Unexpected JSON value for 'top_tags': " ++ show x)
 
              the_total <- case lookup "total_posts" pairs of
                         Nothing -> fail "Network.Delicious.JSON: Missing JSON field: total_posts"
@@ -243,8 +242,8 @@ instance JSON URLDetails where
                 URLDetails { total = the_total
                            , url   = the_url
                            , tags  = the_tags
-			   , hash  = hsh
-			   }
+         , hash  = hsh
+         }
 
     readJSON s = fail ("Network.Delicious.JSON: url details malformed: "++ show s)
 
@@ -285,7 +284,7 @@ feed_html_url = "http://feeds.delicious.com/html"
 
 getHtmlForTag :: HtmlFeed
               -> Maybe Tag
-	      -> DM {-Html-}String
+        -> DM {-Html-}String
 getHtmlForTag hf mbTg = do
   u <- getUser
   c <- getCount
@@ -299,18 +298,18 @@ getHtmlForTag hf mbTg = do
     where
       opts = concat $ intersperse "&" $ catMaybes
          [ "count"     -==> fmap show c
-	 , "extended"  -=> toB (hf_extended hf) "title" "body"
-	 , "divclass"  -==> hf_divClass hf
-	 , "aclass"    -==> hf_aClass hf
-	 , "tags"      -=> toB (hf_showTags hf) "no" "yes"
-	 , "tagclass"  -==> hf_tagClass hf
-	 , "tagsep"    -==> hf_tagSep hf
-	 , "tagsepclass" -==> hf_tagSepClass hf
-	 , "bullet"    -==> hf_bulletEnt hf
-	 , "rssbutton" -==> fmap (\ x -> toB x "no" "yes") (hf_withFeedButton hf)
-	 , "extendeddiv" -==> fmap (\ x -> toB x "no" "yes") (hf_extendedInDiv hf)
-	 , "extendedclass" -==> hf_extendedClass hf
-	 ]
+         , "extended"  -=> toB (hf_extended hf) "title" "body"
+         , "divclass"  -==> hf_divClass hf
+         , "aclass"    -==> hf_aClass hf
+         , "tags"      -=> toB (hf_showTags hf) "no" "yes"
+         , "tagclass"  -==> hf_tagClass hf
+         , "tagsep"    -==> hf_tagSep hf
+         , "tagsepclass" -==> hf_tagSepClass hf
+         , "bullet"    -==> hf_bulletEnt hf
+         , "rssbutton" -==> fmap (\ x -> toB x "no" "yes") (hf_withFeedButton hf)
+         , "extendeddiv" -==> fmap (\ x -> toB x "no" "yes") (hf_extendedInDiv hf)
+         , "extendedclass" -==> hf_extendedClass hf
+         ]
 
   consSlash "" = ""
   consSlash xs = '/':xs

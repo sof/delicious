@@ -76,9 +76,21 @@ nullUser :: User
 nullUser
  = User { userName = ""
         , userPass = ""
-	}
+  }
 
 newtype DM a = DM {unDM :: DMEnv -> IO a}
+
+instance Functor DM where
+  f `fmap` ax = return f <*> ax
+
+instance Applicative DM where
+
+  pure = return
+
+  af <*> ax = do
+      f <- af
+      x <- ax
+      return $ f x
 
 instance Monad DM where
   return x = DM $ \ _   -> return x
@@ -184,11 +196,11 @@ nullPost = Post
 instance JSON Post where
     showJSON p = JSObject $ toJSObject $ catMaybes
         [ Just ("u",       showJSON (JSONString (postHref p)))
-	, mb "d"          (showJSON.JSONString) (postDesc p)
-	, mb "n"          (showJSON.JSONString) (postNotes p)
-	, mb "dt"         (showJSON.JSONString) (postStamp p)
-	, Just ("t",      JSArray (map (showJSON.JSONString) (postTags p)))
-	]
+        , mb "d"          (showJSON.JSONString) (postDesc p)
+        , mb "n"          (showJSON.JSONString) (postNotes p)
+        , mb "dt"         (showJSON.JSONString) (postStamp p)
+        , Just ("t",      JSArray (map (showJSON.JSONString) (postTags p)))
+        ]
      where
       mb _ _ "" = Nothing
       mb t f xs = Just (t, f xs)
@@ -213,12 +225,13 @@ instance JSON Post where
                         Nothing -> return ""
                         Just  n -> readJSON n
 
-             return $ nullPost{ postHref=ur
-	                      , postDesc=desc
-			      , postNotes=notes
-			      , postTags=tgs
-			      , postStamp=ts
-			      }
+             return $ nullPost
+                 { postHref=ur
+                 , postDesc=desc
+                 , postNotes=notes
+                 , postTags=tgs
+                 , postStamp=ts
+                 }
 
     readJSON s = fail ("Network.Delicious.JSON: malformed post: "++ show s)
 
