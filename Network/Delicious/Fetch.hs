@@ -30,8 +30,8 @@ import Network.Delicious.Types
 readContentsURL :: String -> URLString -> IO String
 readContentsURL ua u = do
   let opts = [ CurlFollowLocation True
-	     , CurlUserAgent ua
-	     ]
+             , CurlUserAgent ua
+             ]
   (_,xs) <- curlGetString u opts
   return xs
 
@@ -39,13 +39,14 @@ readContentsURL ua u = do
 -- credentials.
 readUserContentsURL :: User -> String -> URLString -> IO String
 readUserContentsURL u ua url = do
-  let opts = [ CurlHttpAuth [HttpAuthAny]
-             , CurlUserPwd (userName u ++ 
-	                    case userPass u of {"" -> ""; p -> ':':p })
-             , CurlFollowLocation True
-	     , CurlUserAgent ua
-	     ]
+  let pass
+        | null (userPass u) = ""
+        | otherwise         = ':': userPass u
+      opts = [
+          CurlHttpAuth [HttpAuthAny]
+        , CurlUserPwd (userName u ++ pass)
+        , CurlFollowLocation True
+        , CurlUserAgent ua
+        ]
   (_,xs) <- curlGetString url opts
   return xs
-     
-
